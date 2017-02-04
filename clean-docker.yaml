@@ -1,0 +1,10 @@
+---
+- hosts: kubes
+  remote_user: pirate
+  tasks:
+    - name: clean docker container
+      shell: docker rm -f $(docker ps -qa); exit 0
+    - name: clean docker images
+      shell: docker rmi -f $(docker images -qa); exit 0
+    - name: clean docker volumes
+      shell: docker volume rm -f $(docker volume ls -q); exit 0

@@ -1,0 +1,18 @@
+---
+- hosts: kubes
+  remote_user: pirate
+  tasks:
+    - name: clean docker
+      shell: docker rm -f etcd; exit 0
+    - name: run etccd
+      shell: |
+        docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
+        --name etcd --restart always ender74/etcd-arm /usr/local/bin/etcd \
+        -name etcd0 \
+        -advertise-client-urls http://{{inventory_hostname}}:2379,http://{{inventory_hostname}}:4001 \
+        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+        -initial-advertise-peer-urls http://{{inventory_hostname}}:2380 \
+        -listen-peer-urls http://0.0.0.0:2380 \
+        -initial-cluster-token etcd-cluster-1 \
+        -initial-cluster etcd0=http://kube-01:2380,etcd1=http://kube-02:2380,etcd2=http://kube-03:2380 \
+        -initial-cluster-state new

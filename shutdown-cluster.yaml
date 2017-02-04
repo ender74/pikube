@@ -1,0 +1,7 @@
+---
+- hosts: kubes
+  remote_user: pirate
+  become: true
+  tasks:
+    - name: shutdown
+      shell: shutdown -h now
