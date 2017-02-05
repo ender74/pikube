@@ -23,3 +23,5 @@
         -initial-cluster-token etcd-cluster-1 \
         -initial-cluster {{etcd_cluster}} \
         -initial-cluster-state new
+    - name: check cluster
+      shell: curl --retry 5 --retry-delay 5 {{etcd_scheme}}://{{ ansible_hostname }}:2379/v2/members
