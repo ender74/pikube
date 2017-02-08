@@ -1,0 +1,27 @@
+---
+- hosts: etcd
+  remote_user: pirate
+  vars:
+    etcd_network_iface: "eth0"
+    etcd_secure: false
+    etcd_master_group_name: etcd
+    etcd_public_ip : "{{hostvars[inventory_hostname]['ansible_' + etcd_network_iface]['ipv4']['address']}}"
+    etcd_scheme : "{% if etcd_secure %}https{% else %}http{% endif %}"
+    etcd_cluster: "{% for host in groups[etcd_master_group_name] %}{{hostvars[host]['inventory_hostname']}}={{etcd_scheme}}://{{hostvars[host]['ansible_' + etcd_network_iface]['ipv4']['address']}}:2380{% if not loop.last %},{% endif %}{% endfor %}"
+  tasks:
+    - name: clean docker etcd
+      shell: docker rm -f etcd; exit 0
+    - name: run docker etcd
+      shell: |
+        docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
+        --name etcd --restart always ender74/etcd-arm /usr/local/bin/etcd \
+        -name {{ ansible_hostname }} \
+        -advertise-client-urls http://{{etcd_public_ip}}:2379,http://{{etcd_public_ip}}:4001 \
+        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+        -initial-advertise-peer-urls http://{{etcd_public_ip}}:2380 \
+        -listen-peer-urls http://0.0.0.0:2380 \
+        -initial-cluster-token etcd-cluster-1 \
+        -initial-cluster {{etcd_cluster}} \
+        -initial-cluster-state new
+    - name: check cluster
+      shell: curl --retry 5 --retry-delay 5 {{etcd_scheme}}://{{ ansible_hostname }}:2379/v2/members
