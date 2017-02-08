@@ -1,0 +1,9 @@
+---
+- hosts: kube-masters:kube-workers
+  remote_user: pirate
+  become: true
+  tasks:
+    - name: update system
+      shell: |
+        apt-get update
+        apt-get -y dist-upgrade

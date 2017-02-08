@@ -1,7 +1,9 @@
 ---
 - hosts: etcd
   remote_user: pirate
+  become: true
   vars:
+    BOOTSTRAP_DOCKER_PARAM: "-H unix:///var/run/docker-bootstrap.sock"
     etcd_network_iface: "eth0"
     etcd_secure: false
     etcd_master_group_name: etcd
@@ -10,10 +12,10 @@
     etcd_cluster: "{% for host in groups[etcd_master_group_name] %}{{hostvars[host]['inventory_hostname']}}={{etcd_scheme}}://{{hostvars[host]['ansible_' + etcd_network_iface]['ipv4']['address']}}:2380{% if not loop.last %},{% endif %}{% endfor %}"
   tasks:
     - name: clean docker etcd
-      shell: docker rm -f etcd; exit 0
+      shell: docker {{ BOOTSTRAP_DOCKER_PARAM }} rm -f etcd; exit 0
     - name: run docker etcd
       shell: |
-        docker run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
+        docker {{ BOOTSTRAP_DOCKER_PARAM }} run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
         --name etcd --restart always ender74/etcd-arm /usr/local/bin/etcd \
         -name {{ ansible_hostname }} \
         -advertise-client-urls http://{{etcd_public_ip}}:2379,http://{{etcd_public_ip}}:4001 \

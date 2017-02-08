@@ -1,0 +1,25 @@
+---
+- hosts: etcd
+  remote_user: pirate
+  become: true
+  vars:
+    BOOTSTRAP_DOCKER_SOCK: "unix:///var/run/docker-bootstrap.sock"
+  tasks:
+    - name: run bootstrap docker
+      shell: |
+        mkdir -p /var/lib/docker-bootstrap
+        dockerd \
+          -H {{ BOOTSTRAP_DOCKER_SOCK }} \
+          -p /var/run/docker-bootstrap.pid \
+          --iptables=false \
+          --ip-masq=false \
+          --bridge=none \
+          --graph=/var/lib/docker-bootstrap \
+          --exec-root=/var/run/docker-bootstrap \
+          --storage-driver overlay \
+          | sudo dd of=/var/log/docker-bootstrap.log&
+    - shell: docker -H {{ BOOTSTRAP_DOCKER_SOCK }} version
+      register: task_result
+      until: task_result.rc == 0
+      retries: 10
+      delay: 3

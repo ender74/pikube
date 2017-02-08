@@ -3,6 +3,7 @@
   remote_user: pirate
   become: true
   vars:
+    BOOTSTRAP_DOCKER_PARAM: "-H unix:///var/run/docker-bootstrap.sock"
     IP_ADDRESS: "$(ip -o -4 addr list $(ip -o -4 route show to default | awk '{print $5}' | head -1) | awk '{print $4}' | cut -d/ -f1 | head -1)"
     etcd_public_ip: "{{ IP_ADDRESS }}"
     ARCH: "arm"
@@ -13,13 +14,13 @@
     FLANNEL_SUBNET_DIR: "/run/flannel"
   tasks:
     - name: clean docker flannel
-      shell: docker rm -f flannel; exit 0
+      shell: docker {{ BOOTSTRAP_DOCKER_PARAM }} rm -f flannel; exit 0
     - name: run docker flannel
       shell: |
         curl -sSL http://localhost:2379/v2/keys/coreos.com/network/config -XPUT \
           -d value="{ \"Network\": \"{{ FLANNEL_NETWORK }}\", \"Backend\": {\"Type\": \"{{ FLANNEL_BACKEND }}\"}}"
         rm -f {{ FLANNEL_SUBNET_DIR }}/subnet.env
-        docker run -d \
+        docker {{ BOOTSTRAP_DOCKER_PARAM }} run -d \
           --name flannel \
           --restart=always \
           --net=host \
@@ -34,3 +35,5 @@
     - service:
         name: docker
         state: restarted
+    - wait_for:
+        path: "{{ FLANNEL_SUBNET_DIR }}/subnet.env"
