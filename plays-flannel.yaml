@@ -33,7 +33,7 @@
             --ip-masq="{{ FLANNEL_IPMASQ }}" \
             --iface="{{ IP_ADDRESS }}"
     - service:
-        name: docker
+        name: docker-bootstrap
         state: restarted
     - wait_for:
         path: "{{ FLANNEL_SUBNET_DIR }}/subnet.env"
