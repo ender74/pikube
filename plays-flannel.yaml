@@ -1,5 +1,5 @@
 ---
-- hosts: kube-masters:kube-workers
+- hosts: k8s-masters:k8s-workers
   remote_user: pirate
   become: true
   vars:

@@ -1,5 +1,5 @@
 ---
-- hosts: etcd
+- hosts: k8s-etcd
   remote_user: pirate
   become: true
   vars:
