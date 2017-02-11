@@ -3,6 +3,8 @@
   remote_user: pirate
   become: true
   vars:
+    ARCH: "arm"
+    ETCD_VERSION: "2.2.5"
     BOOTSTRAP_DOCKER_PARAM: "-H unix:///var/run/docker-bootstrap.sock"
     etcd_network_iface: "eth0"
     etcd_secure: false
@@ -16,7 +18,7 @@
     - name: run docker etcd
       shell: |
         docker {{ BOOTSTRAP_DOCKER_PARAM }} run -d -v /usr/share/ca-certificates/:/etc/ssl/certs -p 4001:4001 -p 2380:2380 -p 2379:2379 \
-        --name etcd --restart always ender74/etcd-arm /usr/local/bin/etcd \
+        --name etcd --restart always gcr.io/google_containers/etcd-{{ ARCH }}:{{ ETCD_VERSION }} /usr/local/bin/etcd \
         -name {{ ansible_hostname }} \
         -advertise-client-urls http://{{etcd_public_ip}}:2379,http://{{etcd_public_ip}}:4001 \
         -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \

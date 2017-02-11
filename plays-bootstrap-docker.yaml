@@ -5,14 +5,6 @@
   vars:
     BOOTSTRAP_DOCKER_SOCK: "unix:///var/run/docker-bootstrap.sock"
   tasks:
-    - name: clean bootstrap docker service
-      shell: |
-        systemctl disable docker-bootstrap
-        systemctl stop docker-bootstrap
-        rm -rf /var/lib/docker-bootstrap
-        rm -f /var/run/docker-bootstrap
-        rm -f /lib/systemd/system/docker-bootstrap.service
-        rm -f /lib/systemd/system/docker-bootstrap.socket
     - name: register bootstrap docker service
       shell: |
         sed 's/fd:\/\//unix:\/\/\/var\/run\/docker-bootstrap.sock -p \/var\/run\/docker-bootstrap.pid --graph=\/var\/lib\/docker-bootstrap --exec-root=\/var\/run\/docker-bootstrap --storage-driver overlay/' /lib/systemd/system/docker.service | sudo dd of=/lib/systemd/system/docker-bootstrap.service

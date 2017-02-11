@@ -2,3 +2,4 @@
 - include: plays-bootstrap-docker.yaml
 - include: plays-etcd.yaml
 - include: plays-flannel.yaml
+- include: plays-start-k8s-master.yaml

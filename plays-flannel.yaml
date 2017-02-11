@@ -3,10 +3,10 @@
   remote_user: pirate
   become: true
   vars:
+    ARCH: "arm"
     BOOTSTRAP_DOCKER_PARAM: "-H unix:///var/run/docker-bootstrap.sock"
     IP_ADDRESS: "$(ip -o -4 addr list $(ip -o -4 route show to default | awk '{print $5}' | head -1) | awk '{print $4}' | cut -d/ -f1 | head -1)"
     etcd_public_ip: "{{ IP_ADDRESS }}"
-    ARCH: "arm"
     FLANNEL_VERSION: "v0.6.1"
     FLANNEL_IPMASQ: "true"
     FLANNEL_BACKEND: "udp"
